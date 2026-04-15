@@ -20,10 +20,12 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "permissions": [
-        "ACCESS_FINE_LOCATION",
-        "ACCESS_COARSE_LOCATION"
-      ]
+      "permissions": ["ACCESS_FINE_LOCATION", "ACCESS_COARSE_LOCATION"],
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyDm3HkEhoaFftTJ582R5qZ6zAnLbcb1rlI"
+        }
+      }
     },
     "web": {
       "output": "static",
@@ -45,7 +47,13 @@
       ],
       "expo-secure-store",
       "expo-sqlite",
-      "expo-font"
+      "expo-font",
+      [
+        "react-native-maps",
+        {
+          "googleMapsApiKey": "AIzaSyDm3HkEhoaFftTJ582R5qZ6zAnLbcb1rlI"
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,
