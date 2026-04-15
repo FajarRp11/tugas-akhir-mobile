@@ -30,6 +30,7 @@ export interface Device {
   id: number;
   deviceId: string;
   cowId: number | null;
+  cow: Cow;
   isActive: boolean;
   createdAt: string;
 }
@@ -44,6 +45,7 @@ export interface SensorReading {
   latitude: number | null;
   longitude: number | null;
   rssi: number | null;
+  device: Device;
   createdAt: string;
 }
 

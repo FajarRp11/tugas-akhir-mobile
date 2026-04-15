@@ -69,4 +69,10 @@ export const getSensorData = () =>
 export const getSensorDataByDevice = (deviceId: string) =>
   api.get<{ success: boolean; data: SensorReading[] }>(`/api/data/${deviceId}`);
 
+// Anomalies
+export const getLatestCowAnomalies = () =>
+  api.get<{ success: boolean; data: SensorReading[] }>(
+    "/api/data/anomalies/cows",
+  );
+
 export default api;
