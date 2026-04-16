@@ -33,7 +33,12 @@ interface CowLocation {
 }
 
 function getStatus(reading: SensorReading): CowStatus {
-  const { temperature, heartRate, spo2 } = reading;
+  const temperature =
+    reading.temperature != null ? Number(reading.temperature) : null;
+  const heartRate =
+    reading.heartRate != null ? Number(reading.heartRate) : null;
+  const spo2 = reading.spo2 != null ? Number(reading.spo2) : null;
+
   if (
     (temperature && temperature > 40) ||
     (heartRate && heartRate > 90) ||
@@ -95,7 +100,9 @@ export default function MapScreen() {
       // Keep only readings with valid coordinates, deduplicate by deviceId (latest first)
       const latestByDevice = new Map<string, SensorReading>();
       for (const r of readings) {
-        if (r.latitude && r.longitude) {
+        const lat = parseFloat(String(r.latitude));
+        const lng = parseFloat(String(r.longitude));
+        if (!isNaN(lat) && !isNaN(lng) && lat !== 0 && lng !== 0) {
           if (!latestByDevice.has(r.deviceId)) {
             latestByDevice.set(r.deviceId, r);
           }
@@ -106,14 +113,14 @@ export default function MapScreen() {
         (r) => ({
           id: r.deviceId,
           cowName: r.device?.cow?.name ?? r.deviceId,
-          latitude: r.latitude!,
-          longitude: r.longitude!,
-          heartRate: r.heartRate,
-          temperature: r.temperature,
-          spo2: r.spo2,
+          latitude: parseFloat(String(r.latitude)),
+          longitude: parseFloat(String(r.longitude)),
+          heartRate: r.heartRate != null ? Number(r.heartRate) : null,
+          temperature: r.temperature != null ? Number(r.temperature) : null,
+          spo2: r.spo2 != null ? Number(r.spo2) : null,
           status: getStatus(r),
           lastReading: r,
-        })
+        }),
       );
 
       setCows(locations);
@@ -126,7 +133,10 @@ export default function MapScreen() {
             latitude: c.latitude,
             longitude: c.longitude,
           })),
-          { edgePadding: { top: 120, right: 60, bottom: 280, left: 60 }, animated: true }
+          {
+            edgePadding: { top: 120, right: 60, bottom: 280, left: 60 },
+            animated: true,
+          },
         );
       }
     } catch {
@@ -146,9 +156,11 @@ export default function MapScreen() {
     setFiltered(
       q
         ? cows.filter(
-            (c) => c.cowName.toLowerCase().includes(q) || c.id.toLowerCase().includes(q)
+            (c) =>
+              c.cowName.toLowerCase().includes(q) ||
+              c.id.toLowerCase().includes(q),
           )
-        : cows
+        : cows,
     );
   }, [search, cows]);
 
@@ -156,16 +168,28 @@ export default function MapScreen() {
   const showCard = (cow: CowLocation) => {
     setSelected(cow);
     mapRef.current?.animateToRegion(
-      { latitude: cow.latitude - 0.001, longitude: cow.longitude, latitudeDelta: 0.01, longitudeDelta: 0.01 },
-      400
+      {
+        latitude: cow.latitude - 0.001,
+        longitude: cow.longitude,
+        latitudeDelta: 0.01,
+        longitudeDelta: 0.01,
+      },
+      400,
     );
-    Animated.spring(cardAnim, { toValue: 1, useNativeDriver: true, tension: 70, friction: 10 }).start();
+    Animated.spring(cardAnim, {
+      toValue: 1,
+      useNativeDriver: true,
+      tension: 70,
+      friction: 10,
+    }).start();
   };
 
   const hideCard = () => {
-    Animated.timing(cardAnim, { toValue: 0, duration: 200, useNativeDriver: true }).start(() =>
-      setSelected(null)
-    );
+    Animated.timing(cardAnim, {
+      toValue: 0,
+      duration: 200,
+      useNativeDriver: true,
+    }).start(() => setSelected(null));
   };
 
   const cardTranslateY = cardAnim.interpolate({
@@ -176,13 +200,19 @@ export default function MapScreen() {
   // --- Zoom Controls ---
   const zoomIn = () => {
     mapRef.current?.getCamera().then((camera) => {
-      mapRef.current?.animateCamera({ zoom: (camera.zoom ?? 14) + 1 }, { duration: 300 });
+      mapRef.current?.animateCamera(
+        { zoom: (camera.zoom ?? 14) + 1 },
+        { duration: 300 },
+      );
     });
   };
 
   const zoomOut = () => {
     mapRef.current?.getCamera().then((camera) => {
-      mapRef.current?.animateCamera({ zoom: (camera.zoom ?? 14) - 1 }, { duration: 300 });
+      mapRef.current?.animateCamera(
+        { zoom: (camera.zoom ?? 14) - 1 },
+        { duration: 300 },
+      );
     });
   };
 
@@ -204,13 +234,14 @@ export default function MapScreen() {
             key={cow.id}
             coordinate={{ latitude: cow.latitude, longitude: cow.longitude }}
             onPress={() => showCard(cow)}
-            tracksViewChanges={false}
           >
-            <View style={[styles.markerContainer, { borderColor: STATUS_COLOR[cow.status] }]}>
-              <MaterialCommunityIcons name="cow" size={14} color={STATUS_COLOR[cow.status]} />
-              <Text style={[styles.markerLabel, { color: STATUS_COLOR[cow.status] }]}>
-                {cow.id.length > 8 ? cow.id.slice(-6) : cow.id}
-              </Text>
+            <View
+              style={[
+                styles.markerIconCircle,
+                { backgroundColor: STATUS_COLOR[cow.status] },
+              ]}
+            >
+              <MaterialCommunityIcons name="paw" size={16} color="#FFF" />
             </View>
           </Marker>
         ))}
@@ -219,7 +250,12 @@ export default function MapScreen() {
       {/* Search Bar Overlay */}
       <View style={styles.searchWrapper}>
         <View style={styles.searchBar}>
-          <Feather name="search" size={16} color={theme.textSecondary} style={{ marginRight: 8 }} />
+          <Feather
+            name="search"
+            size={16}
+            color={theme.textSecondary}
+            style={{ marginRight: 8 }}
+          />
           <TextInput
             style={styles.searchInput}
             placeholder="Cari nama atau ID sapi..."
@@ -258,7 +294,12 @@ export default function MapScreen() {
 
       {/* Bottom Detail Card */}
       {selected && (
-        <Animated.View style={[styles.detailCard, { transform: [{ translateY: cardTranslateY }] }]}>
+        <Animated.View
+          style={[
+            styles.detailCard,
+            { transform: [{ translateY: cardTranslateY }] },
+          ]}
+        >
           {/* Close Button */}
           <TouchableOpacity style={styles.closeBtn} onPress={hideCard}>
             <Feather name="x" size={18} color="#555" />
@@ -271,9 +312,24 @@ export default function MapScreen() {
             </View>
             <View style={{ flex: 1 }}>
               <Text style={styles.detailCowName}>{selected.cowName}</Text>
-              <View style={[styles.statusBadge, { backgroundColor: STATUS_COLOR[selected.status] + "22" }]}>
-                <View style={[styles.statusDot, { backgroundColor: STATUS_COLOR[selected.status] }]} />
-                <Text style={[styles.statusText, { color: STATUS_COLOR[selected.status] }]}>
+              <View
+                style={[
+                  styles.statusBadge,
+                  { backgroundColor: STATUS_COLOR[selected.status] + "22" },
+                ]}
+              >
+                <View
+                  style={[
+                    styles.statusDot,
+                    { backgroundColor: STATUS_COLOR[selected.status] },
+                  ]}
+                />
+                <Text
+                  style={[
+                    styles.statusText,
+                    { color: STATUS_COLOR[selected.status] },
+                  ]}
+                >
                   {STATUS_LABEL[selected.status]}
                 </Text>
               </View>
@@ -299,12 +355,18 @@ export default function MapScreen() {
 
             <View style={styles.vitalItem}>
               <View style={[styles.vitalIcon, { backgroundColor: "#E8F5E9" }]}>
-                <MaterialCommunityIcons name="thermometer" size={16} color="#2E7D32" />
+                <MaterialCommunityIcons
+                  name="thermometer"
+                  size={16}
+                  color="#2E7D32"
+                />
               </View>
               <View>
                 <Text style={styles.vitalLabel}>SUHU TUBUH</Text>
                 <Text style={styles.vitalValue}>
-                  {selected.temperature != null ? selected.temperature.toFixed(1) : "—"}
+                  {selected.temperature != null
+                    ? selected.temperature.toFixed(1)
+                    : "—"}
                   <Text style={styles.vitalUnit}> °C</Text>
                 </Text>
               </View>
@@ -313,7 +375,12 @@ export default function MapScreen() {
 
           {/* CTA */}
           <TouchableOpacity style={styles.detailBtn} activeOpacity={0.85}>
-            <Feather name="eye" size={16} color="#FFF" style={{ marginRight: 8 }} />
+            <Feather
+              name="eye"
+              size={16}
+              color="#FFF"
+              style={{ marginRight: 8 }}
+            />
             <Text style={styles.detailBtnText}>Lihat Detail Lengkap</Text>
           </TouchableOpacity>
         </Animated.View>
@@ -399,24 +466,49 @@ const getStyles = (theme: any, colorScheme: string) =>
     },
 
     // Marker
-    markerContainer: {
-      backgroundColor: "#FFF",
-      borderRadius: 10,
-      borderWidth: 2,
-      paddingHorizontal: 6,
-      paddingVertical: 3,
-      flexDirection: "row",
+    markerIconCircle: {
+      width: 36,
+      height: 36,
+      borderRadius: 18,
+      borderWidth: 3,
+      borderColor: "#FFF",
       alignItems: "center",
-      gap: 3,
-      shadowColor: "#000",
-      shadowOffset: { width: 0, height: 1 },
-      shadowOpacity: 0.2,
-      shadowRadius: 4,
-      elevation: 3,
+      justifyContent: "center",
+      // Nonaktifkan shadow untuk custom marker di Android karena sering membuat clip
+      ...Platform.select({
+        ios: {
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.25,
+          shadowRadius: 4,
+        },
+      }),
+    },
+    markerTriangle: {
+      width: 0,
+      height: 0,
+      backgroundColor: "transparent",
+      borderStyle: "solid",
+      borderLeftWidth: 5,
+      borderRightWidth: 5,
+      borderBottomWidth: 0,
+      borderTopWidth: 6,
+      borderLeftColor: "transparent",
+      borderRightColor: "transparent",
+      marginTop: -2,
+      marginBottom: 3,
+    },
+    markerLabelContainer: {
+      backgroundColor: "#FFF",
+      paddingHorizontal: 10,
+      paddingVertical: 4,
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: "#E0E0E0",
     },
     markerLabel: {
       fontFamily: "Manrope-Bold",
-      fontSize: 10,
+      fontSize: 11,
     },
 
     // Loading
@@ -452,6 +544,8 @@ const getStyles = (theme: any, colorScheme: string) =>
       backgroundColor: "#F3F4F6",
       alignItems: "center",
       justifyContent: "center",
+      zIndex: 99,
+      elevation: 5,
     },
     detailHeader: {
       flexDirection: "row",
