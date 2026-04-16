@@ -47,13 +47,7 @@
       ],
       "expo-secure-store",
       "expo-sqlite",
-      "expo-font",
-      [
-        "react-native-maps",
-        {
-          "googleMapsApiKey": "AIzaSyDm3HkEhoaFftTJ582R5qZ6zAnLbcb1rlI"
-        }
-      ]
+      "expo-font"
     ],
     "experiments": {
       "typedRoutes": true,
