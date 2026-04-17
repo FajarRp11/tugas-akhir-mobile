@@ -2,6 +2,7 @@ import { Colors } from "@/constants/theme";
 import { getSensorData } from "@/services/api";
 import { SensorReading } from "@/types";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
+import { router } from "expo-router";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
@@ -375,7 +376,11 @@ export default function MapScreen() {
           </View>
 
           {/* CTA */}
-          <TouchableOpacity style={styles.detailBtn} activeOpacity={0.85}>
+          <TouchableOpacity
+            style={styles.detailBtn}
+            activeOpacity={0.85}
+            onPress={() => router.push(`/cow/${selected.id}` as any)}
+          >
             <Feather
               name="eye"
               size={16}
