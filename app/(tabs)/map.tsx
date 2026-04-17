@@ -234,6 +234,7 @@ export default function MapScreen() {
             key={cow.id}
             coordinate={{ latitude: cow.latitude, longitude: cow.longitude }}
             onPress={() => showCard(cow)}
+            title={cow.cowName}
           >
             <View
               style={[

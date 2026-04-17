@@ -8,6 +8,7 @@ import {
 } from "@/types";
 import axios from "axios";
 import * as SecureStore from "expo-secure-store";
+import { useAuthStore } from "@/stores/authStore";
 
 const BASE_URL = "https://cow-monitoring.vercel.app";
 
@@ -26,6 +27,18 @@ api.interceptors.request.use(async (config) => {
   }
   return config;
 });
+
+// Handle 401 Unauthorized
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response && error.response.status === 401) {
+      // Token exists but has expired or is invalid
+      useAuthStore.getState().logout();
+    }
+    return Promise.reject(error);
+  }
+);
 
 // Auth
 export const register = (data: RegisterPayload) =>
