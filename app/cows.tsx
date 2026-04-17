@@ -1,9 +1,8 @@
 import { Colors } from "@/constants/theme";
 import { useDashboard } from "@/hooks/use-dashboard";
-import { useAuthStore } from "@/stores/authStore";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { router } from "expo-router";
-import React from "react";
+import React, { useState } from "react";
 import {
   ActivityIndicator,
   Platform,
@@ -11,27 +10,27 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   TouchableOpacity,
   useColorScheme,
   View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
-export default function HomeScreen() {
+export default function AllCowsScreen() {
   const colorScheme = useColorScheme() ?? "light";
   const theme = Colors[colorScheme];
   const styles = getStyles(theme, colorScheme);
-  const { user } = useAuthStore();
-  const {
-    totalCows,
-    activeDevices,
-    anomaliesCount,
-    cowList,
-    isLoading,
-    refresh,
-  } = useDashboard();
 
-  // Show only up to 4 cows on the home screen
-  const topCows = cowList.slice(0, 4);
+  const { cowList, isLoading, refresh } = useDashboard();
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const filteredCows = cowList.filter(
+    (cow) =>
+      cow.cowName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (cow.deviceId &&
+        cow.deviceId.toLowerCase().includes(searchQuery.toLowerCase()))
+  );
 
   const getRelativeTime = (date: Date | null) => {
     if (!date) return "Belum ada data";
@@ -46,7 +45,44 @@ export default function HomeScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container} edges={["top", "bottom"]}>
+      {/* Header */}
+      <View style={styles.header}>
+        <TouchableOpacity
+          onPress={() => router.back()}
+          style={styles.backButton}
+        >
+          <Feather name="arrow-left" size={24} color="#1A262E" />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Semua Daftar Sapi</Text>
+        <View style={{ width: 40 }} />
+      </View>
+
+      {/* Search Bar */}
+      <View style={styles.searchContainer}>
+        <View style={styles.searchBar}>
+          <Feather
+            name="search"
+            size={18}
+            color={theme.textSecondary}
+            style={{ marginRight: 8 }}
+          />
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Cari ID sapi atau nama..."
+            placeholderTextColor={theme.textSecondary}
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+          />
+          {searchQuery.length > 0 && (
+            <TouchableOpacity onPress={() => setSearchQuery("")}>
+              <Feather name="x-circle" size={18} color={theme.textSecondary} />
+            </TouchableOpacity>
+          )}
+        </View>
+      </View>
+
+      {/* List */}
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
@@ -58,69 +94,15 @@ export default function HomeScreen() {
           />
         }
       >
-        <View style={styles.greetingSection}>
-          <Text style={styles.greetingSub}>Selamat pagi,</Text>
-          <Text style={styles.pageTitle}>
-            Halo, <Text style={{ color: theme.primary }}>{user?.name}</Text>
-          </Text>
-        </View>
-
-        {/* Dashboard Top Section */}
-        <View style={styles.topCard}>
-          <View style={styles.watermarkContainer}>
-            <MaterialCommunityIcons
-              name="paw"
-              size={120}
-              color="rgba(240,240,240,0.5)"
-              style={styles.watermarkIcon}
-            />
-          </View>
-          <Text style={styles.topCardLabel}>TOTAL SAPI</Text>
-          <View style={styles.topCardNumberRow}>
-            <Text style={styles.topCardNumber}>{totalCows}</Text>
-            <Text style={styles.topCardUnit}> Ekor</Text>
-          </View>
-        </View>
-
-        <View style={styles.statsRow}>
-          <View style={styles.statBox}>
-            <View style={[styles.statIconCircle, { backgroundColor: "#E8F5E9" }]}>
-              <Feather name="radio" size={20} color="#2E7D32" />
-            </View>
-            <Text style={styles.statBoxLabel}>PERANGKAT</Text>
-            <Text style={styles.statBoxValue}>
-              {activeDevices} <Text style={styles.statBoxUnit}>Aktif</Text>
-            </Text>
-          </View>
-
-          <View style={[styles.statBox, { backgroundColor: "#FFEBEE" }]}>
-            <View style={[styles.statIconCircle, { backgroundColor: "#D32F2F" }]}>
-              <Feather name="alert-triangle" size={20} color="#FFF" />
-            </View>
-            <Text style={styles.statBoxLabel}>PERINGATAN</Text>
-            <Text style={[styles.statBoxValue, { color: "#D32F2F" }]}>
-              {anomaliesCount} <Text style={[styles.statBoxUnit, { color: "#D32F2F" }]}>Hari Ini</Text>
-            </Text>
-          </View>
-        </View>
-
-        {/* List Section */}
-        <View style={styles.listHeaderContainer}>
-          <Text style={styles.listHeaderTitle}>Daftar Sapi</Text>
-          <TouchableOpacity onPress={() => router.push("/cows")}>
-            <Text style={styles.listHeaderLink}>Lihat Semua</Text>
-          </TouchableOpacity>
-        </View>
-
         {isLoading ? (
           <ActivityIndicator color={theme.primary} style={{ marginTop: 40 }} />
-        ) : cowList.length === 0 ? (
+        ) : filteredCows.length === 0 ? (
           <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>Belum ada data sapi.</Text>
+            <Text style={styles.emptyText}>Tidak ada sapi ditemukan.</Text>
           </View>
         ) : (
           <View style={styles.cowList}>
-            {topCows.map((cow) => {
+            {filteredCows.map((cow) => {
               let badgeColor = "#4CAF50";
               let badgeBg = "#E8F5E9";
               if (cow.status === "peringatan") {
@@ -143,8 +125,15 @@ export default function HomeScreen() {
                   <View style={styles.cowInfo}>
                     <View style={styles.cowTitleRow}>
                       <Text style={styles.cowName}>{cow.cowName}</Text>
-                      <View style={[styles.badge, { backgroundColor: badgeBg }]}>
-                        <View style={[styles.badgeDot, { backgroundColor: badgeColor }]} />
+                      <View
+                        style={[styles.badge, { backgroundColor: badgeBg }]}
+                      >
+                        <View
+                          style={[
+                            styles.badgeDot,
+                            { backgroundColor: badgeColor },
+                          ]}
+                        />
                         <Text style={[styles.badgeText, { color: badgeColor }]}>
                           {cow.status.toUpperCase()}
                         </Text>
@@ -154,7 +143,11 @@ export default function HomeScreen() {
                       ID: {cow.deviceId || cow.id}
                     </Text>
                     <View style={styles.cowUpdateRow}>
-                      <Feather name="clock" size={10} color={theme.textSecondary} />
+                      <Feather
+                        name="clock"
+                        size={10}
+                        color={theme.textSecondary}
+                      />
                       <Text style={styles.cowUpdateText}>
                         Update: {getRelativeTime(cow.lastUpdate)}
                       </Text>
@@ -167,7 +160,7 @@ export default function HomeScreen() {
           </View>
         )}
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -177,126 +170,58 @@ const getStyles = (theme: any, colorScheme: string) =>
       flex: 1,
       backgroundColor: "#F7F9FA",
     },
-    scrollContent: {
-      paddingHorizontal: 20,
-      paddingTop: 24,
-      paddingBottom: Platform.OS === "ios" ? 110 : 90,
-    },
-    greetingSection: {
-      marginBottom: 24,
-    },
-    greetingSub: {
-      fontFamily: "Manrope-Medium",
-      fontSize: 14,
-      color: "#546E7A",
-      marginBottom: 4,
-    },
-    pageTitle: {
-      fontFamily: "Manrope-ExtraBold",
-      fontSize: 26,
-      color: "#1A262E",
-      letterSpacing: -0.5,
-    },
-    topCard: {
-      backgroundColor: "#FFF",
-      borderRadius: 24,
-      padding: 24,
-      marginBottom: 16,
-      position: "relative",
-      overflow: "hidden",
-      shadowColor: "#000",
-      shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 0.05,
-      shadowRadius: 10,
-      elevation: 3,
-    },
-    watermarkContainer: {
-      position: "absolute",
-      right: -20,
-      bottom: -20,
-      opacity: 0.8,
-    },
-    watermarkIcon: {
-      transform: [{ rotate: "-15deg" }],
-    },
-    topCardLabel: {
-      fontFamily: "Manrope-Bold",
-      fontSize: 12,
-      color: "#78909C",
-      letterSpacing: 0.5,
-      marginBottom: 8,
-    },
-    topCardNumberRow: {
-      flexDirection: "row",
-      alignItems: "baseline",
-    },
-    topCardNumber: {
-      fontFamily: "Manrope-ExtraBold",
-      fontSize: 42,
-      color: "#1A262E",
-      marginRight: 4,
-    },
-    topCardUnit: {
-      fontFamily: "Manrope-SemiBold",
-      fontSize: 16,
-      color: "#546E7A",
-    },
-    statsRow: {
-      flexDirection: "row",
-      gap: 16,
-      marginBottom: 24,
-    },
-    statBox: {
-      flex: 1,
-      backgroundColor: "#FFF",
-      borderRadius: 20,
-      padding: 20,
-      shadowColor: "#000",
-      shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 0.05,
-      shadowRadius: 10,
-      elevation: 2,
-    },
-    statIconCircle: {
-      width: 44,
-      height: 44,
-      borderRadius: 22,
-      alignItems: "center",
-      justifyContent: "center",
-      marginBottom: 16,
-    },
-    statBoxLabel: {
-      fontFamily: "Manrope-Bold",
-      fontSize: 11,
-      color: "#78909C",
-      letterSpacing: 0.5,
-      marginBottom: 4,
-    },
-    statBoxValue: {
-      fontFamily: "Manrope-ExtraBold",
-      fontSize: 20,
-      color: "#1A262E",
-    },
-    statBoxUnit: {
-      fontFamily: "Manrope-Medium",
-      fontSize: 12,
-      color: "#78909C",
-    },
-    listHeaderContainer: {
+    header: {
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "space-between",
-      marginBottom: 16,
+      paddingHorizontal: 16,
+      paddingVertical: 12,
+      backgroundColor: "#FFF",
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.05,
+      shadowRadius: 5,
+      elevation: 2,
     },
-    listHeaderTitle: {
+    backButton: {
+      width: 40,
+      height: 40,
+      borderRadius: 20,
+      alignItems: "center",
+      justifyContent: "center",
+      backgroundColor: "#F0F4F8",
+    },
+    headerTitle: {
       fontFamily: "Manrope-Bold",
       fontSize: 18,
       color: "#1A262E",
     },
-    listHeaderLink: {
-      fontFamily: "Manrope-Bold",
-      fontSize: 13,
-      color: theme.primary,
+    searchContainer: {
+      paddingHorizontal: 20,
+      paddingVertical: 16,
+    },
+    searchBar: {
+      flexDirection: "row",
+      alignItems: "center",
+      backgroundColor: "#FFF",
+      borderRadius: 14,
+      paddingHorizontal: 16,
+      paddingVertical: Platform.OS === "ios" ? 14 : 10,
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.03,
+      shadowRadius: 6,
+      elevation: 1,
+    },
+    searchInput: {
+      flex: 1,
+      fontFamily: "Manrope-Medium",
+      fontSize: 14,
+      color: "#1A262E",
+    },
+    scrollContent: {
+      paddingHorizontal: 20,
+      paddingBottom: 40,
     },
     cowList: {
       gap: 12,
