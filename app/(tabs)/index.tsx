@@ -3,6 +3,7 @@ import { useDashboard } from "@/hooks/use-dashboard";
 import { useAuthStore } from "@/stores/authStore";
 import { SensorReading } from "@/types";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
+import { router } from "expo-router";
 import React from "react";
 import {
   ActivityIndicator,
@@ -60,7 +61,11 @@ export default function HomeScreen() {
         </View>
 
         {/* Main Dashboard Cards */}
-        <TouchableOpacity style={styles.mainCard} activeOpacity={0.8}>
+        <TouchableOpacity
+          style={styles.mainCard}
+          activeOpacity={0.8}
+          onPress={() => router.push("/cow" as any)}
+        >
           <View style={[styles.mainCardIconBg, { backgroundColor: "#DDF7E3" }]}>
             <MaterialCommunityIcons name="cow" size={32} color="#4CAF50" />
           </View>
