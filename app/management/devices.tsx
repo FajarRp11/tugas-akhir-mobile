@@ -160,6 +160,15 @@ export default function DeviceManagementScreen() {
         >
           {/* Intro Section */}
           <View style={styles.introSection}>
+            <View style={styles.breadcrumbRow}>
+              <Text style={styles.breadcrumbText}>Manajemen </Text>
+              <Feather
+                name="chevron-right"
+                size={12}
+                color={theme.textSecondary}
+              />
+              <Text style={styles.breadcrumbActiveText}> Daftar Perangkat</Text>
+            </View>
             <Text style={styles.pageTitle}>Kelola Perangkat</Text>
             <Text style={styles.pageDescription}>
               Pantau dan kelola semua sensor IoT yang terpasang pada ternak Anda
@@ -268,22 +277,59 @@ export default function DeviceManagementScreen() {
               return (
                 <View key={device.id} style={styles.deviceCardSimple}>
                   <View style={styles.deviceCardHeader}>
-                    <View style={{ flexDirection: "row", alignItems: "center" }}>
-                      <Feather name="cpu" size={20} color={theme.text} style={{ marginRight: 8 }} />
-                      <Text style={styles.deviceSnSimple}>{device.deviceId}</Text>
+                    <View
+                      style={{ flexDirection: "row", alignItems: "center" }}
+                    >
+                      <Feather
+                        name="cpu"
+                        size={20}
+                        color={theme.text}
+                        style={{ marginRight: 8 }}
+                      />
+                      <Text style={styles.deviceSnSimple}>
+                        {device.deviceId}
+                      </Text>
                     </View>
-                    <View style={[styles.statusBadge, { backgroundColor: device.isActive ? "#E8F5E9" : "#FFEBEE" }]}>
-                      <View style={[styles.statusDot, { backgroundColor: device.isActive ? "#4CAF50" : "#F44336" }]} />
-                      <Text style={[styles.statusText, { color: device.isActive ? "#2E7D32" : "#C62828" }]}>
+                    <View
+                      style={[
+                        styles.statusBadge,
+                        {
+                          backgroundColor: device.isActive
+                            ? "#E8F5E9"
+                            : "#FFEBEE",
+                        },
+                      ]}
+                    >
+                      <View
+                        style={[
+                          styles.statusDot,
+                          {
+                            backgroundColor: device.isActive
+                              ? "#4CAF50"
+                              : "#F44336",
+                          },
+                        ]}
+                      />
+                      <Text
+                        style={[
+                          styles.statusText,
+                          { color: device.isActive ? "#2E7D32" : "#C62828" },
+                        ]}
+                      >
                         {device.isActive ? "Aktif" : "Offline"}
                       </Text>
                     </View>
                   </View>
 
                   <View style={styles.deviceCardBody}>
-                    <MaterialCommunityIcons name="cow" size={16} color={theme.textSecondary} />
+                    <MaterialCommunityIcons
+                      name="cow"
+                      size={16}
+                      color={theme.textSecondary}
+                    />
                     <Text style={styles.cowConnText}>
-                      {" "}{connectedCow ? connectedCow.name : "Belum dipasangkan"}
+                      {" "}
+                      {connectedCow ? connectedCow.name : "Belum dipasangkan"}
                     </Text>
                   </View>
 
@@ -294,7 +340,10 @@ export default function DeviceManagementScreen() {
                         if (connectedCow?.id) {
                           router.push(`/cow/${device.deviceId}` as any);
                         } else {
-                          Alert.alert("Info", "Perangkat belum terhubung ke sapi.");
+                          Alert.alert(
+                            "Info",
+                            "Perangkat belum terhubung ke sapi.",
+                          );
                         }
                       }}
                     >
@@ -304,7 +353,11 @@ export default function DeviceManagementScreen() {
                       style={styles.actionBtnSmallOutline}
                       onPress={() => handleOpenEdit(device)}
                     >
-                      <Feather name="settings" size={14} color={theme.textSecondary} />
+                      <Feather
+                        name="settings"
+                        size={14}
+                        color={theme.textSecondary}
+                      />
                       <Text style={styles.actionBtnTextSmallOutline}>Edit</Text>
                     </TouchableOpacity>
                   </View>
@@ -369,14 +422,25 @@ export default function DeviceManagementScreen() {
               </View>
 
               <Text style={styles.inputLabel}>Pasangkan Sapi</Text>
-              <View style={[styles.pickerContainer, { borderColor: colorScheme === "dark" ? theme.border : "#E0E0E0" }]}>
+              <View
+                style={[
+                  styles.pickerContainer,
+                  {
+                    borderColor:
+                      colorScheme === "dark" ? theme.border : "#E0E0E0",
+                  },
+                ]}
+              >
                 <Picker
                   selectedValue={formCowId}
                   onValueChange={(itemValue) => setFormCowId(itemValue)}
                   style={{ color: theme.text }}
                   dropdownIconColor={theme.text}
                 >
-                  <Picker.Item label="Tidak ada (Lepas Perangkat)" value={null} />
+                  <Picker.Item
+                    label="Tidak ada (Lepas Perangkat)"
+                    value={null}
+                  />
                   {cows.map((cow) => (
                     <Picker.Item key={cow.id} label={cow.name} value={cow.id} />
                   ))}
@@ -449,6 +513,21 @@ const getStyles = (theme: any, colorScheme: string) =>
     },
     introSection: {
       marginBottom: 24,
+    },
+    breadcrumbRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      marginBottom: 6,
+    },
+    breadcrumbText: {
+      fontFamily: "Manrope-Medium",
+      fontSize: 12,
+      color: theme.textSecondary,
+    },
+    breadcrumbActiveText: {
+      fontFamily: "Manrope-Bold",
+      fontSize: 12,
+      color: "#00897B",
     },
     pageTitle: {
       fontFamily: "Manrope-ExtraBold",

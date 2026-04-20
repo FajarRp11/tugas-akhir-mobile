@@ -166,6 +166,7 @@ export default function ProfileScreen() {
           icon={<Feather name="settings" size={18} color="#E65100" />}
           label="Pengaturan Akun"
           iconBg="#FFF3E0"
+          onPress={() => router.push("/management/settings")}
         />
         <View style={styles.menuDivider} />
         <MenuItem
