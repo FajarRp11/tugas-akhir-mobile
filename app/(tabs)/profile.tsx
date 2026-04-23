@@ -1,10 +1,13 @@
 import { Colors } from "@/constants/theme";
+import { getCows, getDevices } from "@/services/api";
 import { useAuthStore } from "@/stores/authStore";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
+import { router } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Platform,
+  RefreshControl,
   ScrollView,
   StyleSheet,
   Text,
@@ -12,7 +15,6 @@ import {
   useColorScheme,
   View,
 } from "react-native";
-import { getCows, getDevices } from "@/services/api";
 
 interface ProfileStat {
   value: number;
@@ -32,7 +34,11 @@ function MenuItem({ icon, label, iconBg, onPress }: MenuItemProps) {
   const styles = getStyles(theme, colorScheme);
 
   return (
-    <TouchableOpacity style={styles.menuItem} activeOpacity={0.7} onPress={onPress}>
+    <TouchableOpacity
+      style={styles.menuItem}
+      activeOpacity={0.7}
+      onPress={onPress}
+    >
       <View style={[styles.menuIconCircle, { backgroundColor: iconBg }]}>
         {icon}
       </View>
@@ -47,23 +53,30 @@ export default function ProfileScreen() {
   const theme = Colors[colorScheme];
   const styles = getStyles(theme, colorScheme);
   const { user, logout } = useAuthStore();
-  const [stats, setStats] = useState<{ cows: number; devices: number }>({ cows: 0, devices: 0 });
+  const [stats, setStats] = useState<{ cows: number; devices: number }>({
+    cows: 0,
+    devices: 0,
+  });
   const [isLoading, setIsLoading] = useState(true);
 
+  const fetchStats = async () => {
+    try {
+      const [cowsRes, devicesRes] = await Promise.all([
+        getCows(),
+        getDevices(),
+      ]);
+      const activeDev = devicesRes.data.data.filter((d) => d.isActive).length;
+      setStats({ cows: cowsRes.data.data.length, devices: activeDev });
+    } catch {
+      // fail silently
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        const [cowsRes, devicesRes] = await Promise.all([getCows(), getDevices()]);
-        const activeDev = devicesRes.data.data.filter((d) => d.isActive).length;
-        setStats({ cows: cowsRes.data.data.length, devices: activeDev });
-      } catch {
-        // fail silently
-      } finally {
-        setIsLoading(false);
-      }
-    };
     fetchStats();
-  }, []);
+  }, [fetchStats]);
 
   const getInitials = (name: string) => {
     return name
@@ -79,6 +92,13 @@ export default function ProfileScreen() {
       style={styles.container}
       contentContainerStyle={styles.scrollContent}
       showsVerticalScrollIndicator={false}
+      refreshControl={
+        <RefreshControl
+          refreshing={isLoading}
+          colors={[theme.primary]}
+          onRefresh={fetchStats}
+        />
+      }
     >
       {/* Avatar & Info */}
       <View style={styles.profileHeader}>
@@ -102,7 +122,10 @@ export default function ProfileScreen() {
       {/* Stats Row */}
       <View style={styles.statsRow}>
         {isLoading ? (
-          <ActivityIndicator color={theme.primary} style={{ flex: 1, paddingVertical: 20 }} />
+          <ActivityIndicator
+            color={theme.primary}
+            style={{ flex: 1, paddingVertical: 20 }}
+          />
         ) : (
           <>
             <View style={[styles.statCard, { marginRight: 12 }]}>
@@ -123,18 +146,27 @@ export default function ProfileScreen() {
           icon={<MaterialCommunityIcons name="cow" size={18} color="#2E7D32" />}
           label="Daftar Sapi Saya"
           iconBg="#E8F5E9"
+          onPress={() => router.push("/management/cows")}
         />
         <View style={styles.menuDivider} />
         <MenuItem
-          icon={<MaterialCommunityIcons name="access-point" size={18} color="#2E7D32" />}
+          icon={
+            <MaterialCommunityIcons
+              name="access-point"
+              size={18}
+              color="#2E7D32"
+            />
+          }
           label="Kelola Perangkat"
           iconBg="#E8F5E9"
+          onPress={() => router.push("/management/devices")}
         />
         <View style={styles.menuDivider} />
         <MenuItem
           icon={<Feather name="settings" size={18} color="#E65100" />}
           label="Pengaturan Akun"
           iconBg="#FFF3E0"
+          onPress={() => router.push("/management/settings")}
         />
         <View style={styles.menuDivider} />
         <MenuItem
@@ -145,8 +177,17 @@ export default function ProfileScreen() {
       </View>
 
       {/* Logout Button */}
-      <TouchableOpacity style={styles.logoutBtn} activeOpacity={0.8} onPress={() => logout()}>
-        <Feather name="log-out" size={18} color="#FFF" style={{ marginRight: 10 }} />
+      <TouchableOpacity
+        style={styles.logoutBtn}
+        activeOpacity={0.8}
+        onPress={() => logout()}
+      >
+        <Feather
+          name="log-out"
+          size={18}
+          color="#FFF"
+          style={{ marginRight: 10 }}
+        />
         <Text style={styles.logoutBtnText}>Keluar</Text>
       </TouchableOpacity>
     </ScrollView>
