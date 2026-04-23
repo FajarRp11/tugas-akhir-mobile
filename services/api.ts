@@ -1,3 +1,4 @@
+import { useAuthStore } from "@/stores/authStore";
 import {
   AuthPayload,
   AuthResponse,
@@ -8,7 +9,6 @@ import {
 } from "@/types";
 import axios from "axios";
 import * as SecureStore from "expo-secure-store";
-import { useAuthStore } from "@/stores/authStore";
 
 const BASE_URL = "https://cow-monitoring.vercel.app";
 
@@ -37,15 +37,15 @@ api.interceptors.response.use(
       useAuthStore.getState().logout();
     }
     return Promise.reject(error);
-  }
+  },
 );
 
 // Auth
 export const register = (data: RegisterPayload) =>
-  api.post<AuthResponse>("/api/register", data);
+  api.post<AuthResponse>("/api/auth/register", data);
 
 export const login = (data: AuthPayload) =>
-  api.post<AuthResponse>("/api/login", data);
+  api.post<AuthResponse>("/api/auth/login", data);
 
 // Cows
 export const getCows = () =>

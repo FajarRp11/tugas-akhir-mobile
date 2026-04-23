@@ -58,7 +58,7 @@ function CowLayoutHeader() {
           />
         </View>
         <Text style={[headerStyles.headerLogoText, { color: theme.primary }]}>
-          Cow Sense
+          Smart Cattle
         </Text>
       </View>
       <TouchableOpacity

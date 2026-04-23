@@ -1,8 +1,8 @@
 {
   "expo": {
-    "name": "mobile",
+    "name": "Smart Cattle",
     "slug": "mobile",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "mobile",
@@ -25,7 +25,8 @@
         "googleMaps": {
           "apiKey": "AIzaSyDm3HkEhoaFftTJ582R5qZ6zAnLbcb1rlI"
         }
-      }
+      },
+      "package": "com.fajarrp11.mobile"
     },
     "web": {
       "output": "static",
@@ -52,6 +53,13 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "0ad04072-b088-480b-b2de-f2e0d8d12fa6"
+      }
+    },
+    "owner": "fajarrp11"
   }
 }

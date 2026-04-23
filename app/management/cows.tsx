@@ -10,6 +10,7 @@ import {
   KeyboardAvoidingView,
   Modal,
   Platform,
+  RefreshControl,
   ScrollView,
   StyleSheet,
   Text,
@@ -109,7 +110,7 @@ export default function CowManagementScreen() {
   const filteredCows = cows.filter(
     (cow) =>
       cow.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      String(cow.id).includes(searchQuery)
+      String(cow.id).includes(searchQuery),
   );
 
   return (
@@ -118,7 +119,10 @@ export default function CowManagementScreen() {
       <View style={[styles.container, { paddingTop: insets.top }]}>
         {/* Header */}
         <View style={styles.headerBar}>
-          <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
+          <TouchableOpacity
+            onPress={() => router.back()}
+            style={styles.backBtn}
+          >
             <Feather name="arrow-left" size={24} color={theme.text} />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Daftar Sapi Saya</Text>
@@ -126,19 +130,32 @@ export default function CowManagementScreen() {
         </View>
 
         {/* Content */}
-        <ScrollView contentContainerStyle={styles.scrollContent}>
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          refreshControl={
+            <RefreshControl
+              refreshing={isLoading}
+              colors={[theme.primary]}
+              onRefresh={fetchCows}
+            />
+          }
+        >
           {/* Page Info & Search */}
           <View style={styles.pageInfoContainer}>
             <View style={styles.breadcrumbRow}>
               <Text style={styles.breadcrumbText}>Manajemen </Text>
-              <Feather name="chevron-right" size={12} color={theme.textSecondary} />
+              <Feather
+                name="chevron-right"
+                size={12}
+                color={theme.textSecondary}
+              />
               <Text style={styles.breadcrumbActiveText}> Daftar Sapi</Text>
             </View>
             <Text style={styles.pageTitleText}>Kelola Ternak Anda</Text>
             <Text style={styles.pageDescription}>
               Total {cows.length} ekor sapi terpantau secara real-time.
             </Text>
-            
+
             <View style={styles.searchRow}>
               <View
                 style={[
@@ -146,7 +163,8 @@ export default function CowManagementScreen() {
                   {
                     flex: 1,
                     backgroundColor: theme.card,
-                    borderColor: colorScheme === "dark" ? theme.border : "#EBEBEB",
+                    borderColor:
+                      colorScheme === "dark" ? theme.border : "#EBEBEB",
                     marginRight: 12,
                   },
                 ]}
@@ -176,32 +194,58 @@ export default function CowManagementScreen() {
           </View>
 
           {isLoading && cows.length === 0 ? (
-            <ActivityIndicator size="large" color={theme.primary} style={{ marginTop: 20 }} />
+            <ActivityIndicator
+              size="large"
+              color={theme.primary}
+              style={{ marginTop: 20 }}
+            />
           ) : filteredCows.length === 0 ? (
             <View style={styles.emptyContainer}>
-              <MaterialCommunityIcons name="cow" size={64} color={theme.textSecondary} style={{ opacity: 0.5 }} />
+              <MaterialCommunityIcons
+                name="cow"
+                size={64}
+                color={theme.textSecondary}
+                style={{ opacity: 0.5 }}
+              />
               <Text style={styles.emptyText}>
-                {searchQuery ? "Data sapi tidak ditemukan" : "Belum ada sapi yang terdaftar"}
+                {searchQuery
+                  ? "Data sapi tidak ditemukan"
+                  : "Belum ada sapi yang terdaftar"}
               </Text>
             </View>
           ) : (
             filteredCows.map((cow) => (
               <View key={cow.id} style={styles.cowCard}>
-                <View style={[styles.cowAvatar, { backgroundColor: colorScheme === "dark" ? "#424242" : "#1A262E" }]}>
+                <View
+                  style={[
+                    styles.cowAvatar,
+                    {
+                      backgroundColor:
+                        colorScheme === "dark" ? "#424242" : "#1A262E",
+                    },
+                  ]}
+                >
                   <MaterialCommunityIcons name="cow" size={28} color="#FFF" />
                 </View>
                 <View style={styles.cowInfo}>
                   <Text style={styles.cowName}>{cow.name}</Text>
                   <Text style={styles.cowSub}>ID: {cow.id}</Text>
                   <Text style={styles.cowSub} numberOfLines={1}>
-                    Tgl Daftar: {new Date(cow.createdAt).toLocaleDateString("id-ID")}
+                    Tgl Daftar:{" "}
+                    {new Date(cow.createdAt).toLocaleDateString("id-ID")}
                   </Text>
                 </View>
                 <View style={styles.actionRow}>
-                  <TouchableOpacity style={styles.actionBtnEdit} onPress={() => handleOpenEdit(cow)}>
+                  <TouchableOpacity
+                    style={styles.actionBtnEdit}
+                    onPress={() => handleOpenEdit(cow)}
+                  >
                     <Feather name="edit-2" size={16} color="#4CAF50" />
                   </TouchableOpacity>
-                  <TouchableOpacity style={styles.actionBtnDelete} onPress={() => handleDelete(cow.id)}>
+                  <TouchableOpacity
+                    style={styles.actionBtnDelete}
+                    onPress={() => handleDelete(cow.id)}
+                  >
                     <Feather name="trash-2" size={16} color="#F44336" />
                   </TouchableOpacity>
                 </View>
@@ -209,8 +253,6 @@ export default function CowManagementScreen() {
             ))
           )}
         </ScrollView>
-
-
 
         {/* Form Modal */}
         <Modal visible={modalVisible} transparent animationType="slide">
@@ -221,10 +263,17 @@ export default function CowManagementScreen() {
             behavior={Platform.OS === "ios" ? "padding" : undefined}
             style={styles.modalContainer}
           >
-            <View style={[styles.modalContent, { backgroundColor: theme.card }]}>
+            <View
+              style={[styles.modalContent, { backgroundColor: theme.card }]}
+            >
               <View style={styles.modalHeader}>
-                <Text style={styles.modalTitle}>{editingCow ? "Edit Sapi" : "Data Sapi"}</Text>
-                <TouchableOpacity onPress={() => setModalVisible(false)} style={styles.closeBtn}>
+                <Text style={styles.modalTitle}>
+                  {editingCow ? "Edit Sapi" : "Data Sapi"}
+                </Text>
+                <TouchableOpacity
+                  onPress={() => setModalVisible(false)}
+                  style={styles.closeBtn}
+                >
                   <Feather name="x" size={20} color={theme.textSecondary} />
                 </TouchableOpacity>
               </View>
@@ -233,7 +282,11 @@ export default function CowManagementScreen() {
               <TextInput
                 style={[
                   styles.textInput,
-                  { color: theme.text, borderColor: colorScheme === "dark" ? theme.border : "#E0E0E0" },
+                  {
+                    color: theme.text,
+                    borderColor:
+                      colorScheme === "dark" ? theme.border : "#E0E0E0",
+                  },
                 ]}
                 placeholder="cth. Limon"
                 placeholderTextColor={theme.textSecondary}

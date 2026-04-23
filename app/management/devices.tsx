@@ -17,6 +17,7 @@ import {
   KeyboardAvoidingView,
   Modal,
   Platform,
+  RefreshControl,
   ScrollView,
   StyleSheet,
   Switch,
@@ -157,6 +158,13 @@ export default function DeviceManagementScreen() {
         <ScrollView
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={isLoading}
+              colors={[theme.primary]}
+              onRefresh={fetchData}
+            />
+          }
         >
           {/* Intro Section */}
           <View style={styles.introSection}>
