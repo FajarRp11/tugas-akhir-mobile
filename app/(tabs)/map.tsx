@@ -1,4 +1,5 @@
 import { Colors } from "@/constants/theme";
+import { usePusher, SensorEvent } from "@/hooks/use-pusher";
 import { getSensorData } from "@/services/api";
 import { SensorReading } from "@/types";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
@@ -150,6 +151,83 @@ export default function MapScreen() {
   useEffect(() => {
     fetchLocations();
   }, [fetchLocations]);
+
+  // --- Real-time Pusher Updates ---
+  usePusher((newData: SensorEvent) => {
+    const parsedLat = newData.latitude != null ? parseFloat(String(newData.latitude)) : NaN;
+    const parsedLng = newData.longitude != null ? parseFloat(String(newData.longitude)) : NaN;
+    const hasValidCoords = !isNaN(parsedLat) && !isNaN(parsedLng) && parsedLat !== 0 && parsedLng !== 0;
+
+    const dummyReading: SensorReading = {
+      id: 0,
+      deviceId: newData.deviceId,
+      readingId: null,
+      temperature: newData.temperature,
+      heartRate: newData.heartRate,
+      spo2: newData.spo2,
+      latitude: newData.latitude,
+      longitude: newData.longitude,
+      rssi: newData.rssi,
+      device: {} as any,
+      createdAt: newData.createdAt,
+    };
+
+    const newStatus = getStatus(dummyReading);
+
+    setCows((prevCows) => {
+      const idx = prevCows.findIndex((c) => c.id === newData.deviceId);
+
+      if (idx !== -1) {
+        // Update existing cow
+        const updatedCows = [...prevCows];
+        updatedCows[idx] = {
+          ...updatedCows[idx],
+          latitude: hasValidCoords ? parsedLat : updatedCows[idx].latitude,
+          longitude: hasValidCoords ? parsedLng : updatedCows[idx].longitude,
+          heartRate: newData.heartRate,
+          temperature: newData.temperature,
+          spo2: newData.spo2,
+          status: newStatus,
+          lastReading: dummyReading,
+        };
+        return updatedCows;
+      } else {
+        // New cow connection
+        // Only add if it has valid coordinates
+        if (!hasValidCoords) return prevCows;
+
+        const newCow: CowLocation = {
+          id: newData.deviceId,
+          cowName: newData.cowName || newData.deviceId,
+          latitude: parsedLat,
+          longitude: parsedLng,
+          heartRate: newData.heartRate,
+          temperature: newData.temperature,
+          spo2: newData.spo2,
+          status: newStatus,
+          lastReading: dummyReading,
+        };
+        return [...prevCows, newCow];
+      }
+    });
+
+    // Automatically update the selected bottom card if it's currently showing
+    setSelected((prev) => {
+      if (prev && prev.id === newData.deviceId) {
+        return {
+          ...prev,
+          latitude: hasValidCoords ? parsedLat : prev.latitude,
+          longitude: hasValidCoords ? parsedLng : prev.longitude,
+          heartRate: newData.heartRate,
+          temperature: newData.temperature,
+          spo2: newData.spo2,
+          status: newStatus,
+          lastReading: dummyReading,
+        };
+      }
+      return prev;
+    });
+  });
 
   // --- Search ---
   useEffect(() => {
