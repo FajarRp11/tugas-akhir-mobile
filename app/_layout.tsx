@@ -23,6 +23,7 @@ import {
   useFonts,
 } from "@expo-google-fonts/manrope";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
+import * as Location from "expo-location";
 import { useEffect, useState } from "react";
 
 // Notifications.setNotificationHandler({
@@ -58,6 +59,12 @@ export default function RootLayout() {
 
   useEffect(() => {
     const init = async () => {
+      // Meminta pop-up lokasi saat aplikasi pertama kali dilaunch
+      try {
+        await Location.requestForegroundPermissionsAsync();
+      } catch (e) {
+        /* Abaikan bila perangkat menolak secara mendadak */
+      }
       await loadAuth();
       setIsAuthLoaded(true);
     };

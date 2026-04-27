@@ -1,5 +1,5 @@
 import { Colors } from "@/constants/theme";
-import { usePusher, SensorEvent } from "@/hooks/use-pusher";
+import { SensorEvent, usePusher } from "@/hooks/use-pusher";
 import { getSensorData } from "@/services/api";
 import { SensorReading } from "@/types";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
@@ -154,9 +154,15 @@ export default function MapScreen() {
 
   // --- Real-time Pusher Updates ---
   usePusher((newData: SensorEvent) => {
-    const parsedLat = newData.latitude != null ? parseFloat(String(newData.latitude)) : NaN;
-    const parsedLng = newData.longitude != null ? parseFloat(String(newData.longitude)) : NaN;
-    const hasValidCoords = !isNaN(parsedLat) && !isNaN(parsedLng) && parsedLat !== 0 && parsedLng !== 0;
+    const parsedLat =
+      newData.latitude != null ? parseFloat(String(newData.latitude)) : NaN;
+    const parsedLng =
+      newData.longitude != null ? parseFloat(String(newData.longitude)) : NaN;
+    const hasValidCoords =
+      !isNaN(parsedLat) &&
+      !isNaN(parsedLng) &&
+      parsedLat !== 0 &&
+      parsedLng !== 0;
 
     const dummyReading: SensorReading = {
       id: 0,

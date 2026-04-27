@@ -18,6 +18,9 @@ export interface SensorEvent {
   createdAt: string;
 }
 
+const PUSHER_KEY = "7662bc11ec767cc43308";
+const PUSHER_CLUSTER = "ap1";
+
 export function usePusher(onNewData: (data: SensorEvent) => void) {
   const { user } = useAuthStore();
   const onNewDataRef = useRef(onNewData);
@@ -30,8 +33,8 @@ export function usePusher(onNewData: (data: SensorEvent) => void) {
     if (!user?.id) return;
     Pusher.logToConsole = true;
 
-    const pusher = new Pusher(process.env.EXPO_PUBLIC_PUSHER_KEY!, {
-      cluster: process.env.EXPO_PUBLIC_PUSHER_CLUSTER!,
+    const pusher = new Pusher(PUSHER_KEY, {
+      cluster: PUSHER_CLUSTER,
       forceTLS: true,
     });
 

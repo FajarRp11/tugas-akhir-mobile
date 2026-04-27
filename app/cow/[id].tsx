@@ -2,7 +2,7 @@ import { Colors } from "@/constants/theme";
 import { getSensorDataByDevice } from "@/services/api";
 import { SensorReading } from "@/types";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
-import { router, Stack, useLocalSearchParams } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import React, { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
