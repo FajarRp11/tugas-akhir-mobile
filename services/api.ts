@@ -82,10 +82,16 @@ export const getSensorData = () =>
 export const getSensorDataByDevice = (deviceId: string) =>
   api.get<{ success: boolean; data: SensorReading[] }>(`/api/data/${deviceId}`);
 
-// Anomalies
+// Anomalies (Beranda: hanya terbaru per device)
 export const getLatestCowAnomalies = () =>
   api.get<{ success: boolean; data: SensorReading[] }>(
     "/api/data/anomalies/cows",
+  );
+
+// Anomalies History (Notifikasi: semua anomali 7 hari terakhir)
+export const getAnomalyHistory = () =>
+  api.get<{ success: boolean; data: SensorReading[] }>(
+    "/api/data/anomalies/cows?mode=history",
   );
 
 export default api;
