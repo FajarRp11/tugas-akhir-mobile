@@ -30,7 +30,7 @@ export interface Device {
   id: number;
   deviceId: string;
   cowId: number | null;
-  cow: Cow;
+  cow: Cow | null;
   isActive: boolean;
   createdAt: string;
 }

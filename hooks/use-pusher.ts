@@ -1,4 +1,5 @@
 import { useAuthStore } from "@/stores/authStore";
+import Constants from "expo-constants";
 import PusherLib from "pusher-js/react-native";
 import { useEffect, useRef } from "react";
 
@@ -18,8 +19,8 @@ export interface SensorEvent {
   createdAt: string;
 }
 
-const PUSHER_KEY = "7662bc11ec767cc43308";
-const PUSHER_CLUSTER = "ap1";
+const PUSHER_KEY = Constants.expoConfig?.extra?.pusherKey;
+const PUSHER_CLUSTER = Constants.expoConfig?.extra?.pusherCluster;
 
 export function usePusher(onNewData: (data: SensorEvent) => void) {
   const { user } = useAuthStore();

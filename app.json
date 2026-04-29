@@ -58,7 +58,9 @@
       "router": {},
       "eas": {
         "projectId": "0ad04072-b088-480b-b2de-f2e0d8d12fa6"
-      }
+      },
+      "pusherKey": "7662bc11ec767cc43308",
+      "pusherCluster": "ap1"
     },
     "owner": "fajarrp11"
   }
