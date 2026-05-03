@@ -13,6 +13,8 @@ import { StatusBar } from "expo-status-bar";
 import "react-native-reanimated";
 
 import { useColorScheme } from "@/hooks/use-color-scheme";
+import { usePushNotification } from "@/hooks/use-push-notification";
+import { savePushToken } from "@/services/api";
 import { useAuthStore } from "@/stores/authStore";
 import {
   Manrope_400Regular,
@@ -26,16 +28,6 @@ import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import * as Location from "expo-location";
 import { useEffect, useState } from "react";
 
-// Notifications.setNotificationHandler({
-//   handleNotification: async () => ({
-//     shouldShowAlert: true,
-//     shouldPlaySound: true,
-//     shouldSetBadge: false,
-//     shouldShowBanner: true,
-//     shouldShowList: true,
-//   }),
-// });
-
 export const unstable_settings = {
   anchor: "(tabs)",
 };
@@ -46,6 +38,7 @@ export default function RootLayout() {
   const segments = useSegments();
   const rootNavigationState = useRootNavigationState();
   const [isAuthLoaded, setIsAuthLoaded] = useState(false);
+  const { expoPushToken } = usePushNotification();
 
   const [fontsLoaded] = useFonts({
     Manrope: Manrope_400Regular,
@@ -83,6 +76,12 @@ export default function RootLayout() {
     }
   }, [token, segments, isAuthLoaded, rootNavigationState?.key]);
 
+  useEffect(() => {
+    if (token && expoPushToken) {
+      savePushToken(expoPushToken).catch(console.error);
+    }
+  }, [token, expoPushToken]);
+
   if (!fontsLoaded) {
     return null;
   }
@@ -93,6 +92,7 @@ export default function RootLayout() {
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="(auth)" options={{ headerShown: false }} />
         <Stack.Screen name="cow" options={{ headerShown: false }} />
+        <Stack.Screen name="chicken" options={{ headerShown: false }} />
         <Stack.Screen name="management" options={{ headerShown: false }} />
         <Stack.Screen
           name="modal"

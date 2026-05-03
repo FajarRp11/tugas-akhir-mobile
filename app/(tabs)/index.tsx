@@ -86,7 +86,11 @@ export default function HomeScreen() {
           </View>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.mainCard} activeOpacity={0.8}>
+        <TouchableOpacity
+          style={styles.mainCard}
+          activeOpacity={0.8}
+          onPress={() => router.push("/chicken" as any)}
+        >
           <View style={[styles.mainCardIconBg, { backgroundColor: "#FFE0B2" }]}>
             <MaterialCommunityIcons
               name="egg-fried"

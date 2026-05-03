@@ -67,7 +67,7 @@ export default function LoginScreen() {
               color={theme.white}
             />
           </View>
-          <Text style={styles.appName}>Sistem Monitoring Sapi</Text>
+          <Text style={styles.appName}>Smart Cattle</Text>
         </View>
 
         <View style={styles.card}>

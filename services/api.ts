@@ -94,4 +94,7 @@ export const getAnomalyHistory = () =>
     "/api/data/anomalies/cows?mode=history",
   );
 
+export const savePushToken = (pushToken: string) =>
+  api.post("/api/profile/push-token", { pushToken });
+
 export default api;

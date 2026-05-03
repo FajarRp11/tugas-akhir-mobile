@@ -26,7 +26,8 @@ export default function RegisterScreen() {
   const [password, setPassword] = useState<string>("");
   const [confirmPassword, setConfirmPassword] = useState<string>("");
   const [showPassword, setShowPassword] = useState<boolean>(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState<boolean>(false);
+  const [showConfirmPassword, setShowConfirmPassword] =
+    useState<boolean>(false);
   const { saveAuth, isLoading, setLoading } = useAuthStore();
   const styles = getStyles(theme, colorScheme);
 
@@ -78,12 +79,14 @@ export default function RegisterScreen() {
               color={theme.white}
             />
           </View>
-          <Text style={styles.appName}>Sistem Monitoring Sapi</Text>
+          <Text style={styles.appName}>Smart Cattle</Text>
         </View>
 
         <View style={styles.card}>
           <Text style={styles.title}>Daftar Akun Baru</Text>
-          <Text style={styles.subtitle}>Daftar untuk mengelola ternak Anda</Text>
+          <Text style={styles.subtitle}>
+            Daftar untuk mengelola ternak Anda
+          </Text>
 
           <View style={styles.formGroup}>
             <Text style={styles.label}>NAMA LENGKAP</Text>
@@ -170,7 +173,9 @@ export default function RegisterScreen() {
                 onChangeText={setConfirmPassword}
                 secureTextEntry={!showConfirmPassword}
               />
-              <TouchableOpacity onPress={() => setShowConfirmPassword(!showConfirmPassword)}>
+              <TouchableOpacity
+                onPress={() => setShowConfirmPassword(!showConfirmPassword)}
+              >
                 <Feather
                   name={showConfirmPassword ? "eye" : "eye-off"}
                   size={20}
