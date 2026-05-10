@@ -43,7 +43,7 @@ const CAMERA_CAPTURE: CameraCapture = {
   id: "cam-1",
   cameraName: "Kamera 1",
   location: "Kandang A-01",
-  image: require("@/assets/images/chicken/capture_1.png"),
+  image: require("@/assets/images/chicken/capture_1.jpg"),
   timestamp: "03 Mei 2026, 16:30",
   chickenCount: 24,
 };
