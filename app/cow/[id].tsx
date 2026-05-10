@@ -1,4 +1,5 @@
 import { Colors } from "@/constants/theme";
+import { usePusher, SensorEvent } from "@/hooks/use-pusher";
 import { getSensorDataByDevice } from "@/services/api";
 import { SensorReading } from "@/types";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
@@ -88,6 +89,42 @@ export default function CowDetailScreen() {
   useEffect(() => {
     fetchDetail();
   }, [fetchDetail]);
+
+  // Real-time: update data sapi saat data baru masuk via Pusher
+  usePusher(
+    useCallback(
+      (data: SensorEvent) => {
+        // Hanya proses jika data untuk device yang sedang dilihat
+        if (data.deviceId !== id) return;
+
+        const newReading: SensorReading = {
+          id: Date.now(),
+          deviceId: data.deviceId,
+          readingId: null,
+          temperature: data.temperature,
+          heartRate: data.heartRate,
+          spo2: data.spo2,
+          latitude: data.latitude,
+          longitude: data.longitude,
+          rssi: data.rssi,
+          createdAt: data.createdAt,
+          device: {
+            id: 0,
+            deviceId: data.deviceId,
+            cowId: null,
+            cow: data.cowName
+              ? { id: 0, farmerId: 0, name: data.cowName, createdAt: data.createdAt }
+              : null,
+            isActive: true,
+            createdAt: data.createdAt,
+          },
+        };
+
+        setReading(newReading);
+      },
+      [id],
+    ),
+  );
 
   if (isLoading && !reading) {
     return (

@@ -1,4 +1,5 @@
 import { Colors } from "@/constants/theme";
+import { usePusher, SensorEvent } from "@/hooks/use-pusher";
 import { getSensorData } from "@/services/api";
 import { useAuthStore } from "@/stores/authStore";
 import { SensorReading } from "@/types";
@@ -113,6 +114,56 @@ export default function CowMonitoringScreen() {
   useEffect(() => {
     fetchData();
   }, [fetchData]);
+
+  // Real-time: update daftar sapi saat data baru masuk via Pusher
+  usePusher(
+    useCallback((data: SensorEvent) => {
+      const sensorReading: SensorReading = {
+        id: Date.now(),
+        deviceId: data.deviceId,
+        readingId: null,
+        temperature: data.temperature,
+        heartRate: data.heartRate,
+        spo2: data.spo2,
+        latitude: data.latitude,
+        longitude: data.longitude,
+        rssi: data.rssi,
+        createdAt: data.createdAt,
+        device: {
+          id: 0,
+          deviceId: data.deviceId,
+          cowId: null,
+          cow: data.cowName
+            ? { id: 0, farmerId: 0, name: data.cowName, createdAt: data.createdAt }
+            : null,
+          isActive: true,
+          createdAt: data.createdAt,
+        },
+      };
+
+      const newItem: CowListItem = {
+        id: data.deviceId,
+        name: data.cowName || data.deviceId,
+        status: getStatus(sensorReading),
+        updatedAt: new Date(data.createdAt),
+      };
+
+      setCows((prev) => {
+        // Ganti jika device sudah ada, atau tambahkan baru
+        const exists = prev.findIndex((c) => c.id === data.deviceId);
+        let updated: CowListItem[];
+        if (exists >= 0) {
+          updated = [...prev];
+          updated[exists] = newItem;
+        } else {
+          updated = [newItem, ...prev];
+        }
+        return updated.sort(
+          (a, b) => b.updatedAt.getTime() - a.updatedAt.getTime(),
+        );
+      });
+    }, []),
+  );
 
   const activeDevices = cows.length;
   const warnings = cows.filter((c) => c.status !== "NORMAL").length;
