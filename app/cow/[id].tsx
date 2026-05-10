@@ -17,7 +17,7 @@ import {
 import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-type CowStatus = "SEHAT" | "PERINGATAN" | "KRITIS";
+type CowStatus = "NORMAL" | "PERINGATAN" | "KRITIS";
 
 function getStatus(reading: SensorReading): CowStatus {
   const temperature =
@@ -33,19 +33,19 @@ function getStatus(reading: SensorReading): CowStatus {
   )
     return "KRITIS";
   if (
-    (temperature && (temperature > 39.5 || temperature < 38.0)) ||
+    (temperature && (temperature > 37.0 || temperature < 30.0)) ||
     (heartRate && (heartRate > 80 || heartRate < 55)) ||
     (spo2 && spo2 < 95)
   )
     return "PERINGATAN";
-  return "SEHAT";
+  return "NORMAL";
 }
 
 function getIssueText(reading: SensorReading): string | null {
   const issues: string[] = [];
   if (reading.heartRate && reading.heartRate > 80)
     issues.push("Detak jantung tinggi!");
-  if (reading.temperature && reading.temperature > 39.5)
+  if (reading.temperature && reading.temperature > 37.0)
     issues.push("Suhu tubuh tinggi!");
   if (reading.spo2 && reading.spo2 < 95) issues.push("Kadar oksigen rendah!");
   return issues.length > 0 ? issues[0] : null;
@@ -55,7 +55,7 @@ const STATUS_CONFIG: Record<
   CowStatus,
   { bg: string; text: string; label: string }
 > = {
-  SEHAT: { bg: "#A5D6A7", text: "#1B5E20", label: "SEHAT" },
+  NORMAL: { bg: "#A5D6A7", text: "#1B5E20", label: "NORMAL" },
   PERINGATAN: { bg: "#FFCDD2", text: "#B71C1C", label: "PERINGATAN" },
   KRITIS: { bg: "#FFE0B2", text: "#E65100", label: "KRITIS" },
 };
@@ -154,7 +154,7 @@ export default function CowDetailScreen() {
             />
           }
         >
-          {status !== "SEHAT" && alertText && (
+          {status !== "NORMAL" && alertText && (
             <View style={styles.alertBox}>
               <View style={styles.alertIconBox}>
                 <Feather name="alert-triangle" size={20} color="#FFF" />
@@ -265,7 +265,7 @@ export default function CowDetailScreen() {
                 </Text>
               </View>
             </View>
-            <Text style={styles.vitalLabel}>DATA SUHU TUBUH</Text>
+            <Text style={styles.vitalLabel}>DATA SUHU PERMUKAAN TUBUH</Text>
             <Text style={styles.vitalValue}>
               {reading.temperature != null
                 ? Number(reading.temperature).toFixed(1)
@@ -273,7 +273,7 @@ export default function CowDetailScreen() {
               <Text style={styles.vitalUnit}> °C</Text>
             </Text>
             <Text style={styles.vitalIndicator}>
-              Indicator: Normal 38.0 - 39.5°C
+              Indicator: Normal 30.0 - 37.0°C
             </Text>
           </View>
 
@@ -290,7 +290,7 @@ export default function CowDetailScreen() {
                 />
               </View>
               {reading.heartRate &&
-              (reading.heartRate > 80 || reading.heartRate < 55) ? (
+                (reading.heartRate > 80 || reading.heartRate < 55) ? (
                 <View
                   style={[
                     styles.vitalStatusBadge,

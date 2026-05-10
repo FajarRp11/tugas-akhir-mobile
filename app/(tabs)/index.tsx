@@ -20,12 +20,12 @@ import {
 function getAnomalyDescription(reading: SensorReading): string {
   const issues: string[] = [];
   if (reading.temperature) {
-    if (reading.temperature > 39.5) issues.push("Suhu tubuh terlalu tinggi");
-    if (reading.temperature < 38.0) issues.push("Suhu tubuh terlalu rendah");
+    if (reading.temperature > 37.0) issues.push("Suhu permukaan tubuh sapi terlalu tinggi");
+    if (reading.temperature < 30.0) issues.push("Suhu permukaan tubuh sapi terlalu rendah");
   }
   if (reading.heartRate) {
-    if (reading.heartRate > 80) issues.push("Detak jantung terlalu tinggi");
-    if (reading.heartRate < 60) issues.push("Detak jantung terlalu rendah");
+    if (reading.heartRate > 80) issues.push("Detak jantung sapi terlalu tinggi");
+    if (reading.heartRate < 60) issues.push("Detak jantung sapi terlalu rendah");
   }
   if (reading.spo2 && reading.spo2 < 95) {
     issues.push("Kadar oksigen rendah");

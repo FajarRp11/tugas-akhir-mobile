@@ -17,7 +17,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-type CowStatus = "SEHAT" | "PERINGATAN" | "KRITIS";
+type CowStatus = "NORMAL" | "PERINGATAN" | "KRITIS";
 
 interface CowListItem {
   id: string; // deviceId
@@ -40,12 +40,12 @@ function getStatus(reading: SensorReading): CowStatus {
   )
     return "KRITIS";
   if (
-    (temperature && (temperature > 39.5 || temperature < 38.0)) ||
+    (temperature && (temperature > 37.0 || temperature < 30.0)) ||
     (heartRate && (heartRate > 80 || heartRate < 55)) ||
     (spo2 && spo2 < 95)
   )
     return "PERINGATAN";
-  return "SEHAT";
+  return "NORMAL";
 }
 
 function getTimeAgo(date: Date) {
@@ -63,7 +63,7 @@ const STATUS_CONFIG: Record<
   CowStatus,
   { bg: string; text: string; dot: string }
 > = {
-  SEHAT: { bg: "#A5D6A7", text: "#1B5E20", dot: "#1B5E20" },
+  NORMAL: { bg: "#A5D6A7", text: "#1B5E20", dot: "#1B5E20" },
   PERINGATAN: { bg: "#FFCDD2", text: "#F9A825", dot: "#F9A825" },
   KRITIS: { bg: "#FFE0B2", text: "#D32F2F", dot: "#D32F2F" },
 };
@@ -115,7 +115,7 @@ export default function CowMonitoringScreen() {
   }, [fetchData]);
 
   const activeDevices = cows.length;
-  const warnings = cows.filter((c) => c.status !== "SEHAT").length;
+  const warnings = cows.filter((c) => c.status !== "NORMAL").length;
 
   return (
     <View style={[styles.container]}>

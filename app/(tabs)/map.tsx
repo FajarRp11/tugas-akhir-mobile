@@ -48,7 +48,7 @@ function getStatus(reading: SensorReading): CowStatus {
   )
     return "kritis";
   if (
-    (temperature && (temperature > 39.5 || temperature < 38.0)) ||
+    (temperature && (temperature > 37.0 || temperature < 30.0)) ||
     (heartRate && (heartRate > 80 || heartRate < 55)) ||
     (spo2 && spo2 < 95)
   )
@@ -241,10 +241,10 @@ export default function MapScreen() {
     setFiltered(
       q
         ? cows.filter(
-            (c) =>
-              c.cowName.toLowerCase().includes(q) ||
-              c.id.toLowerCase().includes(q),
-          )
+          (c) =>
+            c.cowName.toLowerCase().includes(q) ||
+            c.id.toLowerCase().includes(q),
+        )
         : cows,
     );
   }, [search, cows]);
@@ -448,7 +448,7 @@ export default function MapScreen() {
                 />
               </View>
               <View>
-                <Text style={styles.vitalLabel}>SUHU TUBUH</Text>
+                <Text style={styles.vitalLabel}>SUHU PERMUKAAN TUBUH</Text>
                 <Text style={styles.vitalValue}>
                   {selected.temperature != null
                     ? selected.temperature.toFixed(1)

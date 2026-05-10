@@ -20,13 +20,13 @@ type NotifType = "kritis" | "peringatan" | "info";
 
 // --- Utilities ---
 function getAnomalyDetails(cowName: string, reading: SensorReading) {
-  if (reading.temperature && reading.temperature > 39.5) {
+  if (reading.temperature && reading.temperature > 37.0) {
     return {
       title: `${cowName}: Suhu Tubuh Tinggi`,
       description: `Terdeteksi suhu tubuh mencapai ${Number(reading.temperature).toFixed(1)}°C. Segera lakukan pengecekan fisik untuk menghindari potensi stres panas atau infeksi.`,
     };
   }
-  if (reading.temperature && reading.temperature < 38.0) {
+  if (reading.temperature && reading.temperature < 30.0) {
     return {
       title: `${cowName}: Suhu Tubuh Rendah`,
       description: `Terdeteksi suhu tubuh turun ke ${Number(reading.temperature).toFixed(1)}°C. Pastikan sapi di tempat tertutup atau lebih hangat.`,
