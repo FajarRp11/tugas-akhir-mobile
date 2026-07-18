@@ -42,15 +42,15 @@ function getStatus(reading: SensorReading): CowStatus {
   const spo2 = reading.spo2 != null ? Number(reading.spo2) : null;
 
   if (
-    (temperature && temperature > 40) ||
-    (heartRate && heartRate > 90) ||
-    (spo2 && spo2 < 90)
+    (temperature && temperature > 37) ||
+    (heartRate && heartRate > 84) ||
+    (spo2 && spo2 < 94)
   )
     return "kritis";
   if (
     (temperature && (temperature > 37.0 || temperature < 30.0)) ||
-    (heartRate && (heartRate > 80 || heartRate < 55)) ||
-    (spo2 && spo2 < 95)
+    (heartRate && (heartRate > 84 || heartRate < 48)) ||
+    (spo2 && spo2 < 94)
   )
     return "warning";
   return "normal";
@@ -152,88 +152,89 @@ export default function MapScreen() {
     fetchLocations();
   }, [fetchLocations]);
 
-  // --- Real-time Pusher Updates ---
-  usePusher((newData: SensorEvent) => {
-    const parsedLat =
-      newData.latitude != null ? parseFloat(String(newData.latitude)) : NaN;
-    const parsedLng =
-      newData.longitude != null ? parseFloat(String(newData.longitude)) : NaN;
-    const hasValidCoords =
-      !isNaN(parsedLat) &&
-      !isNaN(parsedLng) &&
-      parsedLat !== 0 &&
-      parsedLng !== 0;
+  const handlePusherData = useCallback((newData: SensorEvent) => {
+    try {
+      const parsedLat =
+        newData.latitude != null ? parseFloat(String(newData.latitude)) : NaN;
+      const parsedLng =
+        newData.longitude != null ? parseFloat(String(newData.longitude)) : NaN;
+      const hasValidCoords =
+        !isNaN(parsedLat) &&
+        !isNaN(parsedLng) &&
+        parsedLat !== 0 &&
+        parsedLng !== 0;
 
-    const dummyReading: SensorReading = {
-      id: 0,
-      deviceId: newData.deviceId,
-      readingId: null,
-      temperature: newData.temperature,
-      heartRate: newData.heartRate,
-      spo2: newData.spo2,
-      latitude: newData.latitude,
-      longitude: newData.longitude,
-      rssi: newData.rssi,
-      device: {} as any,
-      createdAt: newData.createdAt,
-    };
+      const dummyReading: SensorReading = {
+        id: 0,
+        deviceId: newData.deviceId,
+        readingId: null,
+        temperature: newData.temperature,
+        heartRate: newData.heartRate,
+        spo2: newData.spo2,
+        latitude: newData.latitude,
+        longitude: newData.longitude,
+        rssi: newData.rssi,
+        device: {} as any,
+        createdAt: newData.createdAt,
+      };
 
-    const newStatus = getStatus(dummyReading);
+      const newStatus = getStatus(dummyReading);
 
-    setCows((prevCows) => {
-      const idx = prevCows.findIndex((c) => c.id === newData.deviceId);
+      setCows((prevCows) => {
+        const idx = prevCows.findIndex((c) => c.id === newData.deviceId);
+        if (idx !== -1) {
+          const updatedCows = [...prevCows];
+          updatedCows[idx] = {
+            ...updatedCows[idx],
+            latitude: hasValidCoords ? parsedLat : updatedCows[idx].latitude,
+            longitude: hasValidCoords ? parsedLng : updatedCows[idx].longitude,
+            heartRate: newData.heartRate,
+            temperature: newData.temperature,
+            spo2: newData.spo2,
+            status: newStatus,
+            lastReading: dummyReading,
+          };
+          return updatedCows;
+        } else {
+          if (!hasValidCoords) return prevCows;
+          return [
+            ...prevCows,
+            {
+              id: newData.deviceId,
+              cowName: newData.cowName || newData.deviceId,
+              latitude: parsedLat,
+              longitude: parsedLng,
+              heartRate: newData.heartRate,
+              temperature: newData.temperature,
+              spo2: newData.spo2,
+              status: newStatus,
+              lastReading: dummyReading,
+            },
+          ];
+        }
+      });
 
-      if (idx !== -1) {
-        // Update existing cow
-        const updatedCows = [...prevCows];
-        updatedCows[idx] = {
-          ...updatedCows[idx],
-          latitude: hasValidCoords ? parsedLat : updatedCows[idx].latitude,
-          longitude: hasValidCoords ? parsedLng : updatedCows[idx].longitude,
-          heartRate: newData.heartRate,
-          temperature: newData.temperature,
-          spo2: newData.spo2,
-          status: newStatus,
-          lastReading: dummyReading,
-        };
-        return updatedCows;
-      } else {
-        // New cow connection
-        // Only add if it has valid coordinates
-        if (!hasValidCoords) return prevCows;
+      setSelected((prev) => {
+        if (prev && prev.id === newData.deviceId) {
+          return {
+            ...prev,
+            latitude: hasValidCoords ? parsedLat : prev.latitude,
+            longitude: hasValidCoords ? parsedLng : prev.longitude,
+            heartRate: newData.heartRate,
+            temperature: newData.temperature,
+            spo2: newData.spo2,
+            status: newStatus,
+            lastReading: dummyReading,
+          };
+        }
+        return prev;
+      });
+    } catch (error) {
+      console.error("Pusher update error:", error);
+    }
+  }, []);
 
-        const newCow: CowLocation = {
-          id: newData.deviceId,
-          cowName: newData.cowName || newData.deviceId,
-          latitude: parsedLat,
-          longitude: parsedLng,
-          heartRate: newData.heartRate,
-          temperature: newData.temperature,
-          spo2: newData.spo2,
-          status: newStatus,
-          lastReading: dummyReading,
-        };
-        return [...prevCows, newCow];
-      }
-    });
-
-    // Automatically update the selected bottom card if it's currently showing
-    setSelected((prev) => {
-      if (prev && prev.id === newData.deviceId) {
-        return {
-          ...prev,
-          latitude: hasValidCoords ? parsedLat : prev.latitude,
-          longitude: hasValidCoords ? parsedLng : prev.longitude,
-          heartRate: newData.heartRate,
-          temperature: newData.temperature,
-          spo2: newData.spo2,
-          status: newStatus,
-          lastReading: dummyReading,
-        };
-      }
-      return prev;
-    });
-  });
+  usePusher(handlePusherData);
 
   // --- Search ---
   useEffect(() => {
@@ -241,10 +242,10 @@ export default function MapScreen() {
     setFiltered(
       q
         ? cows.filter(
-          (c) =>
-            c.cowName.toLowerCase().includes(q) ||
-            c.id.toLowerCase().includes(q),
-        )
+            (c) =>
+              c.cowName.toLowerCase().includes(q) ||
+              c.id.toLowerCase().includes(q),
+          )
         : cows,
     );
   }, [search, cows]);
@@ -320,8 +321,10 @@ export default function MapScreen() {
             coordinate={{ latitude: cow.latitude, longitude: cow.longitude }}
             onPress={() => showCard(cow)}
             title={cow.cowName}
+            tracksViewChanges={true}
           >
             <View
+              collapsable={false}
               style={[
                 styles.markerIconCircle,
                 { backgroundColor: STATUS_COLOR[cow.status] },

@@ -1,5 +1,5 @@
 import { Colors } from "@/constants/theme";
-import { usePusher, SensorEvent } from "@/hooks/use-pusher";
+import { SensorEvent, usePusher } from "@/hooks/use-pusher";
 import { getSensorData } from "@/services/api";
 import { useAuthStore } from "@/stores/authStore";
 import { SensorReading } from "@/types";
@@ -35,15 +35,15 @@ function getStatus(reading: SensorReading): CowStatus {
   const spo2 = reading.spo2 != null ? Number(reading.spo2) : null;
 
   if (
-    (temperature && temperature > 40) ||
-    (heartRate && heartRate > 90) ||
-    (spo2 && spo2 < 90)
+    (temperature && temperature > 37) ||
+    (heartRate && heartRate > 84) ||
+    (spo2 && spo2 < 94)
   )
     return "KRITIS";
   if (
     (temperature && (temperature > 37.0 || temperature < 30.0)) ||
-    (heartRate && (heartRate > 80 || heartRate < 55)) ||
-    (spo2 && spo2 < 95)
+    (heartRate && (heartRate > 84 || heartRate < 48)) ||
+    (spo2 && spo2 < 94)
   )
     return "PERINGATAN";
   return "NORMAL";
@@ -134,7 +134,12 @@ export default function CowMonitoringScreen() {
           deviceId: data.deviceId,
           cowId: null,
           cow: data.cowName
-            ? { id: 0, farmerId: 0, name: data.cowName, createdAt: data.createdAt }
+            ? {
+                id: 0,
+                farmerId: 0,
+                name: data.cowName,
+                createdAt: data.createdAt,
+              }
             : null,
           isActive: true,
           createdAt: data.createdAt,

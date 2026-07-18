@@ -6,6 +6,9 @@ import { useEffect, useRef } from "react";
 // @ts-ignore
 const Pusher = PusherLib.Pusher;
 
+const PUSHER_KEY = Constants.expoConfig?.extra?.pusherKey as string;
+const PUSHER_CLUSTER = Constants.expoConfig?.extra?.pusherCluster as string;
+
 export interface SensorEvent {
   deviceId: string;
   cowName: string;
@@ -19,37 +22,74 @@ export interface SensorEvent {
   createdAt: string;
 }
 
-const PUSHER_KEY = Constants.expoConfig?.extra?.pusherKey;
-const PUSHER_CLUSTER = Constants.expoConfig?.extra?.pusherCluster;
-
 export function usePusher(onNewData: (data: SensorEvent) => void) {
   const { user } = useAuthStore();
-  const onNewDataRef = useRef(onNewData);
+  const onNewDataRef = useRef<(data: SensorEvent) => void>(onNewData);
+  const pusherRef = useRef<any>(null);
+  const channelRef = useRef<any>(null);
 
+  // Update ref setiap render
   useEffect(() => {
     onNewDataRef.current = onNewData;
-  }, [onNewData]);
+  });
 
   useEffect(() => {
     if (!user?.id) return;
-    Pusher.logToConsole = true;
+    if (!PUSHER_KEY || !PUSHER_CLUSTER) {
+      console.error("Pusher key atau cluster tidak ditemukan!");
+      return;
+    }
 
-    const pusher = new Pusher(PUSHER_KEY, {
-      cluster: PUSHER_CLUSTER,
-      forceTLS: true,
-    });
+    let isCleanedUp = false;
 
-    const channel = pusher.subscribe(`farmer-${user.id}`);
+    const initPusher = () => {
+      try {
+        const pusherInstance = new Pusher(PUSHER_KEY, {
+          cluster: PUSHER_CLUSTER,
+          forceTLS: true,
+        });
 
-    channel.bind("new-sensor-reading", (data: SensorEvent) => {
-      console.log("Realtime:", data);
-      onNewDataRef.current(data);
-    });
+        pusherRef.current = pusherInstance;
+
+        const channel = pusherInstance.subscribe(`farmer-${user.id}`);
+        channelRef.current = channel;
+
+        channel.bind("new-sensor-data", (rawData: any) => {
+          if (isCleanedUp) return;
+
+          try {
+            const data: SensorEvent =
+              typeof rawData === "string" ? JSON.parse(rawData) : rawData;
+
+            if (typeof onNewDataRef.current === "function") {
+              onNewDataRef.current(data);
+            }
+          } catch (e) {
+            console.error("Pusher data parse error:", e);
+          }
+        });
+      } catch (error) {
+        console.error("Pusher init error:", error);
+      }
+    };
+
+    initPusher();
 
     return () => {
-      channel.unbind_all();
-      pusher.unsubscribe(`farmer-${user.id}`);
-      pusher.disconnect();
+      isCleanedUp = true;
+      try {
+        if (channelRef.current) {
+          channelRef.current.unbind_all();
+          channelRef.current = null;
+        }
+        if (pusherRef.current) {
+          pusherRef.current.unsubscribe(`farmer-${user.id}`);
+          pusherRef.current.disconnect();
+          pusherRef.current = null;
+        }
+      } catch (e) {
+        console.error("Pusher cleanup error:", e);
+      }
     };
   }, [user?.id]);
 }

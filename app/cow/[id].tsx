@@ -1,5 +1,5 @@
 import { Colors } from "@/constants/theme";
-import { usePusher, SensorEvent } from "@/hooks/use-pusher";
+import { SensorEvent, usePusher } from "@/hooks/use-pusher";
 import { getSensorDataByDevice } from "@/services/api";
 import { SensorReading } from "@/types";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
@@ -28,15 +28,15 @@ function getStatus(reading: SensorReading): CowStatus {
   const spo2 = reading.spo2 != null ? Number(reading.spo2) : null;
 
   if (
-    (temperature && temperature > 40) ||
-    (heartRate && heartRate > 90) ||
-    (spo2 && spo2 < 90)
+    (temperature && temperature > 37) ||
+    (heartRate && heartRate > 84) ||
+    (spo2 && spo2 < 94)
   )
     return "KRITIS";
   if (
     (temperature && (temperature > 37.0 || temperature < 30.0)) ||
-    (heartRate && (heartRate > 80 || heartRate < 55)) ||
-    (spo2 && spo2 < 95)
+    (heartRate && (heartRate > 84 || heartRate < 48)) ||
+    (spo2 && spo2 < 94)
   )
     return "PERINGATAN";
   return "NORMAL";
@@ -113,7 +113,12 @@ export default function CowDetailScreen() {
             deviceId: data.deviceId,
             cowId: null,
             cow: data.cowName
-              ? { id: 0, farmerId: 0, name: data.cowName, createdAt: data.createdAt }
+              ? {
+                  id: 0,
+                  farmerId: 0,
+                  name: data.cowName,
+                  createdAt: data.createdAt,
+                }
               : null,
             isActive: true,
             createdAt: data.createdAt,
@@ -327,7 +332,7 @@ export default function CowDetailScreen() {
                 />
               </View>
               {reading.heartRate &&
-                (reading.heartRate > 80 || reading.heartRate < 55) ? (
+              (reading.heartRate > 80 || reading.heartRate < 55) ? (
                 <View
                   style={[
                     styles.vitalStatusBadge,
