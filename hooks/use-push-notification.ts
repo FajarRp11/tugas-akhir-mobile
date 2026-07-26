@@ -1,7 +1,7 @@
 import * as Device from "expo-device";
 import * as Notifications from "expo-notifications";
 import { useEffect, useRef, useState } from "react";
-import { Platform } from "react-native";
+import { Alert, Platform } from "react-native";
 
 // Konfigurasi tampilan notifikasi saat app foreground
 Notifications.setNotificationHandler({
@@ -21,7 +21,11 @@ export function usePushNotification() {
 
   useEffect(() => {
     registerForPushNotifications().then((token) => {
-      if (token) setExpoPushToken(token);
+      Alert.alert("HOOK", token ?? "NULL");
+
+      if (token) {
+        setExpoPushToken(token);
+      }
     });
 
     // Listener saat notifikasi diterima (app foreground)

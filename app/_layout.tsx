@@ -78,13 +78,17 @@ export default function RootLayout() {
   }, [token, segments, isAuthLoaded, rootNavigationState?.key]);
 
   useEffect(() => {
+    Alert.alert(
+      "DEBUG",
+      `token=${token ? "ADA" : "NULL"}\nexpo=${expoPushToken ?? "NULL"}`,
+    );
+
     if (!token) return;
     if (!expoPushToken) return;
 
     (async () => {
       try {
         const res = await savePushToken(expoPushToken);
-        console.log(res.data);
         Alert.alert("SUCCESS");
       } catch (e: any) {
         Alert.alert("ERROR", JSON.stringify(e.response?.data || e.message));
