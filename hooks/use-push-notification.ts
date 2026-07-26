@@ -1,7 +1,7 @@
 import * as Device from "expo-device";
 import * as Notifications from "expo-notifications";
 import { useEffect, useRef, useState } from "react";
-import { Alert, Platform } from "react-native";
+import { Alert } from "react-native";
 
 // Konfigurasi tampilan notifikasi saat app foreground
 Notifications.setNotificationHandler({
@@ -20,31 +20,18 @@ export function usePushNotification() {
   const responseListener = useRef<any>(null);
 
   useEffect(() => {
-    registerForPushNotifications().then((token) => {
-      Alert.alert("HOOK", token ?? "NULL");
+    (async () => {
+      try {
+        const token = await registerForPushNotifications();
+        Alert.alert("HOOK", token ?? "NULL");
 
-      if (token) {
-        setExpoPushToken(token);
+        if (token) {
+          setExpoPushToken(token);
+        }
+      } catch (e) {
+        Alert.alert("HOOK ERROR", String(e));
       }
-    });
-
-    // Listener saat notifikasi diterima (app foreground)
-    notificationListener.current =
-      Notifications.addNotificationReceivedListener((notification) => {
-        console.log("Notification received:", notification);
-      });
-
-    // Listener saat user tap notifikasi
-    responseListener.current =
-      Notifications.addNotificationResponseReceivedListener((response) => {
-        console.log("Notification tapped:", response);
-        // Bisa navigate ke halaman notifikasi di sini
-      });
-
-    return () => {
-      notificationListener.current?.remove();
-      responseListener.current?.remove();
-    };
+    })();
   }, []);
 
   return { expoPushToken };
@@ -56,7 +43,6 @@ async function registerForPushNotifications(): Promise<string | null> {
     return null;
   }
 
-  // Minta permission
   const { status: existingStatus } = await Notifications.getPermissionsAsync();
   let finalStatus = existingStatus;
 
@@ -70,26 +56,16 @@ async function registerForPushNotifications(): Promise<string | null> {
     return null;
   }
 
-  // Dapatkan Expo Push Token
-  const token = await Notifications.getExpoPushTokenAsync({
-    projectId: "0ad04072-b088-480b-b2de-f2e0d8d12fa6", // dari app.json extra.eas.projectId
-  });
-
-  const nativeToken = await Notifications.getDevicePushTokenAsync();
-
-  console.log("NATIVE TOKEN:", nativeToken);
-  console.log("EXPO TOKEN: ", token.data);
-
-  // Setup channel untuk Android
-  if (Platform.OS === "android") {
-    await Notifications.setNotificationChannelAsync("cow-alerts", {
-      name: "Peringatan Sapi",
-      importance: Notifications.AndroidImportance.MAX,
-      vibrationPattern: [0, 250, 250, 250],
-      lightColor: "#D32F2F",
-      sound: "default",
+  try {
+    const token = await Notifications.getExpoPushTokenAsync({
+      projectId: "0ad04072-b088-480b-b2de-f2e0d8d12fa6",
     });
-  }
 
-  return token.data;
+    console.log("EXPO TOKEN:", token.data);
+
+    return token.data;
+  } catch (e) {
+    console.log("Gagal ambil Expo Push Token:", e);
+    return null;
+  }
 }
