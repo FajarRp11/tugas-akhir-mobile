@@ -78,11 +78,6 @@ export default function RootLayout() {
   }, [token, segments, isAuthLoaded, rootNavigationState?.key]);
 
   useEffect(() => {
-    Alert.alert(
-      "DEBUG",
-      `token=${token ? "ADA" : "NULL"}\nexpo=${expoPushToken ?? "NULL"}`,
-    );
-
     if (!token) return;
     if (!expoPushToken) return;
 
