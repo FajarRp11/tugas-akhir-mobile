@@ -29,7 +29,8 @@
           "apiKey": "AIzaSyDm3HkEhoaFftTJ582R5qZ6zAnLbcb1rlI"
         }
       },
-      "package": "com.fajarrp11.mobile"
+      "package": "com.fajarrp11.mobile",
+      "googleServicesFile": "./google-services.json"
     },
     "web": {
       "output": "static",

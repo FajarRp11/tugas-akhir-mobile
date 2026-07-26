@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "574836186690",
+    "project_id": "smart-cattle-c47c8",
+    "storage_bucket": "smart-cattle-c47c8.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:574836186690:android:a9ea5201171cf7b01397db",
+        "android_client_info": {
+          "package_name": "com.fajarrp11.mobile"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC8BvMSanGFxYqdoQQ7pz34h67Cc1nmWn8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
