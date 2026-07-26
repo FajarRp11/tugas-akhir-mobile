@@ -38,31 +38,46 @@ export function usePushNotification() {
 }
 
 async function registerForPushNotifications(): Promise<string | null> {
-  if (!Device.isDevice) {
-    return null;
-  }
-
-  const { status: existingStatus } = await Notifications.getPermissionsAsync();
-  let finalStatus = existingStatus;
-
-  if (existingStatus !== "granted") {
-    const { status } = await Notifications.requestPermissionsAsync();
-    finalStatus = status;
-  }
-
-  if (finalStatus !== "granted") {
-    return null;
-  }
+  const debug: any = {};
 
   try {
+    debug.isDevice = Device.isDevice;
+
+    if (!Device.isDevice) {
+      Alert.alert("DEBUG", JSON.stringify(debug, null, 2));
+      return null;
+    }
+
+    const perm1 = await Notifications.getPermissionsAsync();
+    debug.existingStatus = perm1.status;
+
+    let finalStatus = perm1.status;
+
+    if (perm1.status !== "granted") {
+      const perm2 = await Notifications.requestPermissionsAsync();
+      debug.requestStatus = perm2.status;
+      finalStatus = perm2.status;
+    }
+
+    debug.finalStatus = finalStatus;
+
+    if (finalStatus !== "granted") {
+      Alert.alert("DEBUG", JSON.stringify(debug, null, 2));
+      return null;
+    }
+
     const token = await Notifications.getExpoPushTokenAsync({
       projectId: "0ad04072-b088-480b-b2de-f2e0d8d12fa6",
     });
 
-    console.log("EXPO TOKEN:", token.data);
+    debug.expoToken = token.data;
+    Alert.alert("DEBUG", JSON.stringify(debug, null, 2));
+
     return token.data;
-  } catch (e) {
-    console.log("Gagal ambil Expo Push Token:", e);
+  } catch (e: any) {
+    debug.error = e?.message ?? String(e);
+    debug.fullError = JSON.stringify(e, null, 2);
+    Alert.alert("ERROR TOKEN", JSON.stringify(debug, null, 2));
     return null;
   }
 }
