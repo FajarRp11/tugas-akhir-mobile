@@ -1,4 +1,3 @@
-import Constants from "expo-constants";
 import * as Device from "expo-device";
 import * as Notifications from "expo-notifications";
 import { useEffect, useRef, useState } from "react";
@@ -40,7 +39,6 @@ export function usePushNotification() {
 
 async function registerForPushNotifications(): Promise<string | null> {
   if (!Device.isDevice) {
-    Alert.alert("ERR", "Bukan physical device");
     return null;
   }
 
@@ -53,25 +51,18 @@ async function registerForPushNotifications(): Promise<string | null> {
   }
 
   if (finalStatus !== "granted") {
-    Alert.alert("ERR", "Permission not granted");
-    return null;
-  }
-
-  const projectId =
-    Constants.expoConfig?.extra?.eas?.projectId ??
-    Constants.easConfig?.projectId;
-
-  if (!projectId) {
-    Alert.alert("ERR", "Project ID tidak ketemu");
     return null;
   }
 
   try {
-    const token = await Notifications.getExpoPushTokenAsync({ projectId });
-    Alert.alert("EXPO TOKEN", token.data);
+    const token = await Notifications.getExpoPushTokenAsync({
+      projectId: "0ad04072-b088-480b-b2de-f2e0d8d12fa6",
+    });
+
+    console.log("EXPO TOKEN:", token.data);
     return token.data;
   } catch (e) {
-    Alert.alert("GET TOKEN ERROR", String(e));
+    console.log("Gagal ambil Expo Push Token:", e);
     return null;
   }
 }
