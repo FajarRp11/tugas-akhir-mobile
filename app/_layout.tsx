@@ -77,9 +77,31 @@ export default function RootLayout() {
   }, [token, segments, isAuthLoaded, rootNavigationState?.key]);
 
   useEffect(() => {
-    if (token && expoPushToken) {
-      savePushToken(expoPushToken).catch(console.error);
+    console.log("JWT:", !!token);
+    console.log("Expo Push Token:", expoPushToken);
+
+    if (!token) {
+      console.log("Belum ada JWT");
+      return;
     }
+
+    if (!expoPushToken) {
+      console.log("Belum ada Expo Push Token");
+      return;
+    }
+
+    console.log("Mengirim push token ke backend...");
+
+    savePushToken(expoPushToken)
+      .then((res) => {
+        console.log("SUKSES:", res.data);
+      })
+      .catch((err) => {
+        console.log("GAGAL SIMPAN TOKEN");
+        console.log(err.response?.status);
+        console.log(err.response?.data);
+        console.log(err.message);
+      });
   }, [token, expoPushToken]);
 
   if (!fontsLoaded) {
