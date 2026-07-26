@@ -71,7 +71,10 @@ async function registerForPushNotifications(): Promise<string | null> {
     projectId: "0ad04072-b088-480b-b2de-f2e0d8d12fa6", // dari app.json extra.eas.projectId
   });
 
-  console.log("Expo Push Token:", token.data);
+  const nativeToken = await Notifications.getDevicePushTokenAsync();
+
+  console.log("NATIVE TOKEN:", nativeToken);
+  console.log("EXPO TOKEN: ", token.data);
 
   // Setup channel untuk Android
   if (Platform.OS === "android") {
