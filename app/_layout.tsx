@@ -27,6 +27,7 @@ import {
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import * as Location from "expo-location";
 import { useEffect, useState } from "react";
+import { Alert } from "react-native";
 
 export const unstable_settings = {
   anchor: "(tabs)",
@@ -77,31 +78,18 @@ export default function RootLayout() {
   }, [token, segments, isAuthLoaded, rootNavigationState?.key]);
 
   useEffect(() => {
-    console.log("JWT:", !!token);
-    console.log("Expo Push Token:", expoPushToken);
+    if (!token) return;
+    if (!expoPushToken) return;
 
-    if (!token) {
-      console.log("Belum ada JWT");
-      return;
-    }
-
-    if (!expoPushToken) {
-      console.log("Belum ada Expo Push Token");
-      return;
-    }
-
-    console.log("Mengirim push token ke backend...");
-
-    savePushToken(expoPushToken)
-      .then((res) => {
-        console.log("SUKSES:", res.data);
-      })
-      .catch((err) => {
-        console.log("GAGAL SIMPAN TOKEN");
-        console.log(err.response?.status);
-        console.log(err.response?.data);
-        console.log(err.message);
-      });
+    (async () => {
+      try {
+        const res = await savePushToken(expoPushToken);
+        console.log(res.data);
+        Alert.alert("SUCCESS");
+      } catch (e: any) {
+        Alert.alert("ERROR", JSON.stringify(e.response?.data || e.message));
+      }
+    })();
   }, [token, expoPushToken]);
 
   if (!fontsLoaded) {
